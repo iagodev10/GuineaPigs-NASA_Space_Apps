@@ -99,7 +99,7 @@
 
     panel.innerHTML = `
       <div class="fw-chatbot-header">
-        <h4>Assistente do Corpo de Bombeiros</h4>
+        <h4>Fire Department Assistant</h4>
         <small>193 | 112</small>
       </div>
       <div class="fw-chatbot-body" id="fwChatBody"></div>

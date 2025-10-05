@@ -50,30 +50,36 @@ function isCacheFresh(filePath, maxAgeMs) {
   }
 }
 
+function toNumericConfidence(value) {
+  if (value == null) return NaN;
+  const num = Number(value);
+  if (Number.isFinite(num)) return num;
+  const s = String(value).trim().toLowerCase();
+  // Map common FIRMS VIIRS labels to numeric bands
+  if (s.startsWith('h') || s === 'high') return 90;
+  if (s.startsWith('n') || s === 'nominal' || s === 'normal') return 60;
+  if (s.startsWith('l') || s === 'low') return 25;
+  return NaN;
+}
+
 function parseCsvToData(csvText) {
   const parsed = Papa.parse(csvText, { header: true, skipEmptyLines: true });
-  const rows = parsed.data;
+  const rows = parsed.data || [];
 
-  // Normalize numeric fields similar to the Python version
-  const numeric = (v) => {
-    const n = Number(v);
-    return Number.isFinite(n) ? n : NaN;
-  };
-
-  // Compute means for imputation
+  // Compute means for imputation based on derived numeric values
   let confSum = 0, confCnt = 0;
   let frpSum = 0, frpCnt = 0;
   let tempSum = 0, tempCnt = 0;
 
   for (const r of rows) {
-    const c = numeric(r.confidence);
-    if (!Number.isNaN(c)) { confSum += c; confCnt++; }
+    const c = toNumericConfidence(r.confidence);
+    if (Number.isFinite(c)) { confSum += c; confCnt++; }
 
-    const f = numeric(r.frp);
-    if (!Number.isNaN(f)) { frpSum += f; frpCnt++; }
+    const f = Number(r.frp);
+    if (Number.isFinite(f)) { frpSum += f; frpCnt++; }
 
-    const t = numeric(r.bright_ti4);
-    if (!Number.isNaN(t)) { tempSum += t; tempCnt++; }
+    const t = Number(r.bright_ti4);
+    if (Number.isFinite(t)) { tempSum += t; tempCnt++; }
   }
 
   const confMean = confCnt ? confSum / confCnt : 0;
@@ -83,21 +89,47 @@ function parseCsvToData(csvText) {
   const data = rows.map((r) => {
     const latitude = Number(r.latitude);
     const longitude = Number(r.longitude);
-    const confidence = Number.isFinite(Number(r.confidence)) ? Number(r.confidence) : confMean;
+    const confVal = toNumericConfidence(r.confidence);
+    const confidence = Number.isFinite(confVal) ? confVal : confMean;
     const frp = Number.isFinite(Number(r.frp)) ? Number(r.frp) : frpMean;
     const bright_ti4 = Number.isFinite(Number(r.bright_ti4)) ? Number(r.bright_ti4) : tempMean;
 
     return {
       ...r,
-      latitude: latitude,
-      longitude: longitude,
-      confidence: confidence,
-      frp: frp,
-      bright_ti4: bright_ti4,
+      latitude,
+      longitude,
+      confidence,
+      frp,
+      bright_ti4,
+      acq_date: String(r.acq_date || ''),
+      acq_time: String(r.acq_time || ''),
+      satellite: r.satellite ? String(r.satellite) : 'Unknown',
+      instrument: r.instrument ? String(r.instrument) : 'Unknown',
     };
   });
 
   return data;
+}
+
+function sanitizeAndDedupe(rows) {
+  if (!Array.isArray(rows)) return [];
+  const out = [];
+  const seen = new Set();
+  for (const r of rows) {
+    const lat = Number(r.latitude);
+    const lon = Number(r.longitude);
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) continue;
+    if (lat < -90 || lat > 90 || lon < -180 || lon > 180) continue;
+    const date = String(r.acq_date || '');
+    const time = String(r.acq_time || '');
+    const sat = String(r.satellite || '');
+    // Dedup key rounds lat/lon to ~100m and uses date+time+satellite
+    const key = `${lat.toFixed(3)}|${lon.toFixed(3)}|${date}|${time}|${sat}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    out.push(r);
+  }
+  return out;
 }
 
 function readCsvFile(filePath) {
@@ -170,20 +202,23 @@ async function getFireData() {
   // 1 - try local CSV
   const local = loadCsvData();
   if (local && local.length) {
-    console.log(`[Backend-Node] Usando dados do CSV local (${local.length} registros)`);
-    return local;
+    const cleaned = sanitizeAndDedupe(local);
+    console.log(`[Backend-Node] Usando dados do CSV local (${cleaned.length} registros deduplicados)`);
+    return cleaned;
   }
 
   // 2 - try cache
   const cached = getCachedData();
   if (cached && cached.length) {
-    console.log(`[Backend-Node] Usando dados do cache (${cached.length} registros)`);
-    return cached;
+    const cleaned = sanitizeAndDedupe(cached);
+    console.log(`[Backend-Node] Usando dados do cache (${cleaned.length} registros deduplicados)`);
+    return cleaned;
   }
 
   // 3 - fetch from NASA
   console.log('[Backend-Node] Nenhum CSV ou cache encontrado. Buscando na NASA FIRMS...');
-  return await fetchNasaFirmsData();
+  const fetched = await fetchNasaFirmsData();
+  return sanitizeAndDedupe(fetched || []);
 }
 
 app.get('/api/fires', async (req, res) => {
