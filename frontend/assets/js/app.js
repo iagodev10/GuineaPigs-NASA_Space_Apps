@@ -11,6 +11,7 @@ const CONFIG = {
   IP_LOCATION_API: "https://ipinfo.io/json",
   COUNTRY_GEOJSON: "https://raw.githubusercontent.com/johan/world.geo.json/master/countries.geo.json",
   REFRESH_INTERVAL_MS: 20 * 60 * 1000,
+  AUTO_REFRESH_ENABLED: false, // disable auto refresh to avoid constant refetching
 }
 
 // Global variables
@@ -30,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (document.getElementById("map")) {
     initializeMap()
     loadFireData()
-    startAutoRefresh()
+    if (CONFIG.AUTO_REFRESH_ENABLED) startAutoRefresh()
 
     // React to global theme changes to keep map tiles in sync
     window.addEventListener("themechange", (e) => {
@@ -165,11 +166,7 @@ function initializeMap() {
 // Auto refresh backend data and reload map every REFRESH_INTERVAL_MS
 function startAutoRefresh() {
   setInterval(async () => {
-    try {
-      await fetch(`${CONFIG.BACKEND_URL}/refresh`, { method: "POST" })
-    } catch (e) {
-      // ignore refresh errors; fallback to just reload data
-    }
+    // Do not delete cache periodically; just reload for UI
     await loadFireData()
     await updateGlobalStats()
   }, CONFIG.REFRESH_INTERVAL_MS)
