@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FireWatch - Global Fire Monitoring System</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.css" />
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster/dist/MarkerCluster.Default.css" />
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-fire-alt"></i>
+                    <span data-i18n="app.name">FireWatch</span>
+                </div>
+                <nav class="nav">
+                    <a href="index.html" class="nav-link active" data-i18n="nav.dashboard">Dashboard</a>
+                    <a href="team.html" class="nav-link" data-i18n="nav.team">Team</a>
+                    <a href="about.html" class="nav-link" data-i18n="nav.about">About</a>
+                </nav>
+                <div class="header-actions">
+                    <button class="theme-toggle-btn" id="themeToggleBtn" title="Toggle theme">
+                        <i class="fas fa-adjust"></i>
+                    </button>
+                    <div class="language-selector">
+                        <button class="language-btn" id="languageBtn">
+                            <i class="fas fa-globe"></i>
+                            <span id="currentLang">EN</span>
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                        <div class="language-dropdown" id="languageDropdown">
+                            <button class="language-option" data-lang="en">
+                                <span class="flag">🇺🇸</span>
+                                <span>English</span>
+                            </button>
+                            <button class="language-option" data-lang="pt">
+                                <span class="flag">🇧🇷</span>
+                                <span>Português</span>
+                            </button>
+                            <button class="language-option" data-lang="es">
+                                <span class="flag">🇪🇸</span>
+                                <span>Español</span>
+                            </button>
+                        </div>
+                    </div>
+                    <button class="mobile-menu-btn" id="mobileMenuBtn">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+
+     Mobile Menu 
+    <div class="mobile-menu" id="mobileMenu">
+        <a href="index.html" class="mobile-nav-link active" data-i18n="nav.dashboard">Dashboard</a>
+        <a href="team.html" class="mobile-nav-link" data-i18n="nav.team">Team</a>
+        <a href="about.html" class="mobile-nav-link" data-i18n="nav.about">About</a>
+        <div class="mobile-language">
+            <button class="language-option" data-lang="en">🇺🇸 English</button>
+            <button class="language-option" data-lang="pt">🇧🇷 Português</button>
+            <button class="language-option" data-lang="es">🇪🇸 Español</button>
+        </div>
+    </div>
+
+     Hero Section 
+    <section class="hero">
+        <div class="container">
+            <div class="hero-content">
+                <h1 class="hero-title" data-i18n="hero.title">Real-Time Global Fire Monitoring</h1>
+                <p class="hero-subtitle" data-i18n="hero.subtitle">NASA FIRMS satellite data for environmental protection and rapid response</p>
+            </div>
+        </div>
+    </section>
+
+     Global Stats 
+    <section class="stats-section">
+        <div class="container">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon fire-pulse">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="totalFires">0</div>
+                        <div class="stat-label" data-i18n="stats.active">Active Fires Globally</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon high-risk">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="highRisk">0</div>
+                        <div class="stat-label" data-i18n="stats.highRisk">High Risk</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-chart-line"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="avgConfidence">0%</div>
+                        <div class="stat-label" data-i18n="stats.confidence">Average Confidence</div>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon">
+                        <i class="fas fa-globe-americas"></i>
+                    </div>
+                    <div class="stat-content">
+                        <div class="stat-value" id="countriesAffected">0</div>
+                        <div class="stat-label" data-i18n="stats.countries">Countries Affected</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+     Search Section 
+    <section class="search-section">
+        <div class="container">
+            <div class="search-card">
+                <h2 class="section-title" data-i18n="search.title">Search by Country or Region</h2>
+                <div class="search-box">
+                    <i class="fas fa-search search-icon"></i>
+                    <input type="text" id="countrySearch" class="search-input" data-i18n-placeholder="search.placeholder">
+                    <button class="search-btn" id="searchBtn">
+                        <i class="fas fa-arrow-right"></i>
+                    </button>
+                </div>
+                <div class="quick-search">
+                    <span class="quick-search-label" data-i18n="search.quick">Quick search:</span>
+                    <button class="quick-btn" data-country="Brazil">Brazil</button>
+                    <button class="quick-btn" data-country="United States">USA</button>
+                    <button class="quick-btn" data-country="Australia">Australia</button>
+                    <button class="quick-btn" data-country="Canada">Canada</button>
+                    <button class="quick-btn" data-country="Indonesia">Indonesia</button>
+                </div>
+
+                <div class="city-search-section">
+                    <h3 class="subsection-title">
+                        <i class="fas fa-city"></i>
+                        <span data-i18n="search.cityTitle">Search by City</span>
+                    </h3>
+                    <div class="search-box">
+                        <i class="fas fa-map-marker-alt search-icon"></i>
+                        <input type="text" id="citySearch" class="search-input" data-i18n-placeholder="search.cityPlaceholder">
+                        <button class="search-btn" id="citySearchBtn">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                    <div class="search-options">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="highlightCity" checked>
+                            <span data-i18n="search.highlight">Highlight city area on map</span>
+                        </label>
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="showCityFires" checked>
+                            <span data-i18n="search.showFires">Show only fires in city</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+     Country Dashboard 
+    <section class="country-dashboard" id="countryDashboard" style="display: none;">
+        <div class="container">
+            <div class="dashboard-header">
+                <h2 class="dashboard-title">
+                    <i class="fas fa-flag"></i>
+                    <span id="countryName">Country</span>
+                </h2>
+                <button class="close-btn" id="closeDashboard">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="dashboard-grid">
+                <div class="dashboard-card">
+                    <div class="dashboard-icon fire-pulse">
+                        <i class="fas fa-fire"></i>
+                    </div>
+                    <div class="dashboard-value" id="countryFires">0</div>
+                    <div class="dashboard-label" data-i18n="dashboard.active">Active Fires</div>
+                </div>
+                <div class="dashboard-card">
+                    <div class="dashboard-icon high-risk">
+                        <i class="fas fa-exclamation-circle"></i>
+                    </div>
+                    <div class="dashboard-value" id="countryHighRisk">0</div>
+                    <div class="dashboard-label" data-i18n="dashboard.highRisk">High Risk</div>
+                </div>
+                <div class="dashboard-card">
+                    <div class="dashboard-icon">
+                        <i class="fas fa-temperature-high"></i>
+                    </div>
+                    <div class="dashboard-value" id="countryAvgTemp">0°K</div>
+                    <div class="dashboard-label" data-i18n="dashboard.temp">Average Temperature</div>
+                </div>
+                <div class="dashboard-card">
+                    <div class="dashboard-icon">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    <div class="dashboard-value" id="countryConfidence">0%</div>
+                    <div class="dashboard-label" data-i18n="dashboard.confidence">Average Confidence</div>
+                </div>
+            </div>
+            <div class="alert-box">
+                <i class="fas fa-info-circle"></i>
+                <p id="countryAlert" data-i18n="dashboard.loading">Loading information...</p>
+            </div>
+        </div>
+    </section>
+
+     Map Section 
+    <section class="map-section">
+        <div class="container">
+            <div class="map-header">
+                <h2 class="section-title" data-i18n="map.title">Interactive Fire Map</h2>
+                <div class="map-controls">
+                    <button class="map-control-btn" id="toggleMapTheme" data-i18n-title="map.toggleTheme">
+                        <i class="fas fa-adjust"></i>
+                    </button>
+                    <button class="map-control-btn" id="refreshData" data-i18n-title="map.refresh">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    <button class="map-control-btn" id="getUserLocation" data-i18n-title="map.location">
+                        <i class="fas fa-location-arrow"></i>
+                    </button>
+                    <button class="map-control-btn" id="clearHighlights" data-i18n-title="map.clear">
+                        <i class="fas fa-eraser"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="map-container">
+                <div id="map"></div>
+                <div class="map-legend">
+                    <h3 data-i18n="map.legend">Legend</h3>
+                    <div class="legend-item">
+                        <span class="legend-marker high"></span>
+                        <span data-i18n="map.highConf">High Confidence (>80%)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-marker medium"></span>
+                        <span data-i18n="map.medConf">Medium Confidence (50-80%)</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-marker low"></span>
+                        <span data-i18n="map.lowConf">Low Confidence (<50%)</span>
+                    </div>
+                    <div class="legend-divider"></div>
+                    <div class="legend-item">
+                        <span class="legend-marker city-highlight"></span>
+                        <span data-i18n="map.cityArea">City Area</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-marker user-location"></span>
+                        <span data-i18n="map.yourLocation">Your Location</span>
+                    </div>
+                </div>
+                <div class="map-loading" id="mapLoading" style="display: none;">
+                    <div class="spinner"></div>
+                    <p data-i18n="map.loading">Loading data...</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+     Footer 
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h3 data-i18n="app.name">FireWatch</h3>
+                    <p data-i18n="footer.description">Global fire monitoring system using NASA FIRMS satellite data.</p>
+                </div>
+                <div class="footer-section">
+                    <h3 data-i18n="footer.quickLinks">Quick Links</h3>
+                    <a href="index.html" data-i18n="nav.dashboard">Dashboard</a>
+                    <a href="team.html" data-i18n="nav.team">Team</a>
+                    <a href="about.html" data-i18n="nav.about">About</a>
+                </div>
+                <div class="footer-section">
+                    <h3 data-i18n="footer.contact">Contact</h3>
+                    <p><i class="fas fa-envelope"></i> contact@firewatch.com</p>
+                    <p><i class="fas fa-phone"></i> +1 (555) 123-4567</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p data-i18n="footer.copyright">&copy; 2025 FireWatch. All rights reserved. Data provided by NASA FIRMS.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/leaflet.markercluster/dist/leaflet.markercluster.js"></script>
+    <script src="assets/js/theme.js"></script>
+    <script src="assets/js/translations.js"></script>
+    <script src="assets/js/responsive.js"></script>
+    <script src="assets/js/app.js"></script>
+</body>
+</html>
+

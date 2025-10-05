@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Análise de Risco NDVI - FireWatch</title>
+    <link rel="stylesheet" href="assets/css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <style>
+        /* Estilo para risco EXTREMO se o JS o retornar */
+        .risk-indicator.EXTREMO { background-color: #991b1b !important; }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <div class="logo">
+                    <i class="fas fa-fire-alt"></i>
+                    <span>FireWatch</span>
+                </div>
+                <nav class="nav">
+                    <a href="index.html" class="nav-link">Dashboard</a>
+                    <a href="analise-ndvi.html" class="nav-link active">Análise de Risco NDVI</a> 
+                    <a href="team.html" class="nav-link">Equipe</a>
+                    <a href="about.html" class="nav-link">Sobre o Projeto</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <section class="analysis-section">
+        <div class="container">
+            <h1 class="section-title">Análise de Vulnerabilidade da Vegetação (NDVI)</h1>
+            <p class="section-subtitle">O NDVI mede a saúde da vegetação. Quedas bruscas no índice sinalizam alto risco de propagação de fogo por seca, crucial para resiliência urbana.</p>
+
+            <div class="analysis-grid">
+                <div class="analysis-card risk-summary">
+                    <h2>Risco de Seca Atual</h2>
+                    <p id="riskLocation" class="text-muted">Local: Carregando...</p>
+                    <p id="riskLevel" class="risk-indicator">Carregando</p>
+                    <p class="text-muted">NDVI Atual: <span id="currentNdvi">--</span></p>
+                    <p class="text-muted small-info"><i class="fas fa-satellite"></i> Fonte: <span id="dataSource">...</span></p>
+                </div>
+                
+                <div class="analysis-card full-chart">
+                    <h2>Tendência Histórica do NDVI</h2>
+                    <canvas id="ndviChart"></canvas>
+                    <div class="chart-info text-muted">
+                        A linha pontilhada marca o limite de estresse hídrico (NDVI 0.45).
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer">
+        </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+    <script src="assets/js/analysis-ndvi.js"></script> 
+</body>
+</html>
