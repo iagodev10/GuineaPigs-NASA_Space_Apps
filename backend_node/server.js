@@ -11,13 +11,25 @@ app.use(cors());
 app.use(express.json());
 
 // Configuration
-const MAP_KEY = '014ed1e599152f03fa879183dcf045f6';
+const MAP_KEY = process.env.FIRMS_API_KEY || '014ed1e599152f03fa879183dcf045f6';
+const FIRMS_PRODUCT = process.env.FIRMS_PRODUCT || 'VIIRS_NOAA20_NRT';
 const CACHE_FILE = path.join(__dirname, 'cache_incendios.csv');
 const CSV_DATA_FILE = path.join(__dirname, 'pasted-text.csv');
 // Cache duration reduced to 20 minutes to keep data fresh
 const CACHE_DURATION_MS = 20 * 60 * 1000;
 const REFRESH_INTERVAL_MS = 20 * 60 * 1000;
 const RADIUS_BOMBEIROS_DEFAULT = 50000; // meters
+
+function clampDayRange(value) {
+  const n = Number(value);
+  if (!Number.isFinite(n)) return 3;
+  if (n < 1) return 1;
+  if (n > 10) return 10;
+  return Math.round(n);
+}
+
+const FIRMS_DAY_RANGE = clampDayRange(process.env.FIRMS_DAY_RANGE || 3);
+let csvMissingLogged = false;
 
 function fileExists(filePath) {
   try {
@@ -93,13 +105,29 @@ function readCsvFile(filePath) {
   return parseCsvToData(text);
 }
 
+function isLikelyFirmsCsv(text) {
+  // Simple validation: CSV header should contain latitude/longitude
+  return typeof text === 'string' && /latitude\s*,\s*longitude/i.test(text);
+}
+
 async function fetchNasaFirmsData() {
   try {
-    const areaUrl = `https://firms.modaps.eosdis.nasa.gov/api/area/csv/${MAP_KEY}/VIIRS_NOAA20_NRT/world/`;
-    console.log('[Backend-Node] Fetching data from NASA FIRMS API...');
-    const resp = await axios.get(areaUrl, { responseType: 'text', timeout: 30000 });
+    const areaUrl = `https://firms.modaps.eosdis.nasa.gov/api/area/csv/${MAP_KEY}/${FIRMS_PRODUCT}/world/${FIRMS_DAY_RANGE}`;
+    console.log('[Backend-Node] Fetching data from NASA FIRMS API...', { product: FIRMS_PRODUCT, days: FIRMS_DAY_RANGE });
+    const resp = await axios.get(areaUrl, { responseType: 'text', timeout: 60000 });
+
+    if (!isLikelyFirmsCsv(resp.data)) {
+      console.error('[Backend-Node] FIRMS API did not return valid CSV. Not caching. First 80 chars:', String(resp.data).slice(0, 80));
+      return null;
+    }
+
     const data = parseCsvToData(resp.data);
-    // overwrite cache with the latest fetch only
+    if (!Array.isArray(data) || data.length === 0) {
+      console.warn('[Backend-Node] FIRMS API returned 0 rows. Not caching.');
+      return null;
+    }
+
+    // overwrite cache with valid content only
     fs.writeFileSync(CACHE_FILE, resp.data, 'utf8');
     console.log(`[Backend-Node] Successfully fetched ${data.length} fire records`);
     return data;
@@ -124,7 +152,10 @@ function getCachedData() {
 function loadCsvData() {
   try {
     if (!fileExists(CSV_DATA_FILE)) {
-      console.log(`[Backend-Node] CSV file not found: ${CSV_DATA_FILE}`);
+      if (!csvMissingLogged) {
+        console.log(`[Backend-Node] CSV file not found (skipping local CSV load): ${CSV_DATA_FILE}`);
+        csvMissingLogged = true;
+      }
       return null;
     }
     console.log(`[Backend-Node] Loading data from CSV file: ${CSV_DATA_FILE}`);
@@ -330,7 +361,7 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'healthy', timestamp: new Date().toISOString() });
 });
 
-// Simple rule-based Chat Assistant (Português - Bombeiros)
+// Simple rule-based Chat Assistant (English default; supports PT-BR keywords too)
 function normalize(text) {
   return String(text || '').toLowerCase();
 }
@@ -339,101 +370,101 @@ function generateChatResponse(userText) {
   const text = normalize(userText);
 
   const emergencyPreamble =
-    'Se isto for uma emergência real, ligue 193 (Bombeiros) ou 112 imediatamente.';
+    'If this is a real emergency, call your local emergency number immediately (e.g., 911 or 112 or 193).';
 
   // Keyword groups
-  const isEmergency = /(inc[eê]ndio|fogo|muita fuma[cç]a|explos[aã]o|desmaio|inconsciente|sangramento|ferimento grave|cheiro de g[aá]s|vazamento de g[aá]s)/.test(text);
-  const isBurn = /(queimadur|queimei|me queimei|queimou|escald[a|o]|[eé]gua quente|[oó]leo quente)/.test(text);
-  const isExtinguisher = /(extintor|usar extintor|como apagar fogo|classe [a-d]|classe a|classe b|classe c)/.test(text);
-  const isChoking = /(engasg|heinlich|heimlich|desengasg)/.test(text);
-  const isPrevention = /(prevenir|preven[çc][aã]o|dica de seguran[çc]a|como evitar|risco de inc[eê]ndio)/.test(text);
-  const isGas = /(cheiro de g[aá]s|botij[aã]o|glp|vazamento)/.test(text);
-  const isElectric = /(choque el[eé]trico|tomada|curto|fios|painel el[eé]trico)/.test(text);
+  const isEmergency = /(fire|lots of smoke|explosion|unconscious|major bleeding|severe injury|gas smell|gas leak|inc[eê]ndio|fogo|muita fuma[cç]a|explos[aã]o|desmaio|inconsciente|sangramento|ferimento grave|cheiro de g[aá]s|vazamento)/.test(text);
+  const isBurn = /(burn|scald|hot water|hot oil|queimadur|queimei|escald)/.test(text);
+  const isExtinguisher = /(extinguisher|use extinguisher|how to put out fire|class [abc]|classe [abc])/i.test(text);
+  const isChoking = /(chok|heimlich|engasg|desengasg)/.test(text);
+  const isPrevention = /(prevent|prevention|safety tip|avoid fire|risk of fire|prevenir|preven[çc][aã]o|seguran[çc]a)/.test(text);
+  const isGas = /(gas leak|smell gas|propane|glp|botij[aã]o|vazamento)/.test(text);
+  const isElectric = /(electrical|electric shock|outlet|short circuit|wires|breaker|choque el[eé]trico|tomada|curto|fios|painel)/.test(text);
 
   // Responses
   if (isEmergency) {
     return [
       `${emergencyPreamble}`,
-      'Enquanto aguarda socorro, se for seguro:',
-      '- Afaste-se da fonte de risco e avise outras pessoas.',
-      '- Desligue energia e gás apenas se puder fazê-lo com segurança.',
-      '- Não tente apagar incêndios grandes. Evacue o local.',
-      '- Mantenha rotas de fuga desobstruídas e permaneça em área ventilada.'
+      'While you wait for help, if it is safe:',
+      '- Move away from the hazard and warn nearby people.',
+      '- Turn off electricity and gas only if you can do it safely.',
+      '- Do not fight large fires. Evacuate immediately.',
+      '- Keep escape routes clear and stay in a ventilated area.'
     ].join('\n');
   }
 
   if (isBurn) {
     return [
       `${emergencyPreamble}`,
-      'Queimaduras – primeiros socorros:',
-      '- Resfrie a área com água corrente fria por 20 minutos.',
-      '- NÃO use pasta de dente, manteiga ou pomadas caseiras.',
-      '- Retire anéis/relógios/roupas justas ao redor da área (sem arrancar tecido colado).',
-      '- Cubra com gaze estéril ou pano limpo e seco.',
-      '- Se a queimadura for extensa, em rosto, mãos, genitais ou houver bolhas grandes, procure atendimento médico imediatamente.'
+      'Burns – first aid:',
+      '- Cool the area with cool running water for 20 minutes.',
+      '- DO NOT apply toothpaste, butter, or home ointments.',
+      '- Remove rings/watches/tight clothing near the area (do not pull off fabric stuck to skin).',
+      '- Cover with sterile gauze or a clean, dry cloth.',
+      '- For extensive burns, face/hands/genitals, or large blisters, seek medical care immediately.'
     ].join('\n');
   }
 
   if (isExtinguisher) {
     return [
       `${emergencyPreamble}`,
-      'Como usar o extintor (PASS):',
-      '- Puxe o pino de segurança.',
-      '- Aponte o bico para a base do fogo.',
-      '- Aperte o gatilho para liberar o agente.',
-      '- Varra lateralmente até extinguir as chamas.',
-      'Classes: A (sólidos), B (líquidos), C (elétricos). Use o tipo correto e mantenha saída às costas.'
+      'How to use a fire extinguisher (PASS):',
+      '- Pull the safety pin.',
+      '- Aim the nozzle at the base of the fire.',
+      '- Squeeze the handle.',
+      '- Sweep side to side until the flames are out.',
+      'Classes: A (solids), B (liquids), C (electrical). Use the correct type and keep an exit behind you.'
     ].join('\n');
   }
 
   if (isChoking) {
     return [
       `${emergencyPreamble}`,
-      'Engasgo – conduta básica:',
-      '- Adultos/crianças: 5 tapas nas costas entre as escápulas + manobra de Heimlich.',
-      '- Bebês (<1 ano): 5 tapas nas costas + 5 compressões torácicas (sem Heimlich).',
-      '- Se a pessoa tossir e respirar, incentive a tosse e monitore.',
-      '- Se ficar inconsciente, inicie RCP e acione emergência.'
+      'Choking – basic response:',
+      '- Adults/children: 5 back blows between the shoulder blades + Heimlich maneuver.',
+      '- Infants (<1 year): 5 back blows + 5 chest thrusts (no Heimlich).',
+      '- If the person can cough and breathe, encourage coughing and monitor.',
+      '- If unconscious, start CPR and call emergency services.'
     ].join('\n');
   }
 
   if (isGas) {
     return [
       `${emergencyPreamble}`,
-      'Vazamento/Cheiro de gás:',
-      '- Abra portas e janelas imediatamente para ventilação.',
-      '- NÃO acenda luzes, isqueiros ou use aparelhos elétricos.',
-      '- Feche o registro do gás/botijão se for seguro.',
-      '- Afaste-se do local e acione a assistência técnica e os Bombeiros.'
+      'Gas leak/smell:',
+      '- Open doors and windows immediately for ventilation.',
+      '- DO NOT turn on lights, use lighters, or operate electrical devices.',
+      '- Close the gas valve/cylinder if safe to do so.',
+      '- Move away from the area and contact technical assistance and the Fire Department.'
     ].join('\n');
   }
 
   if (isElectric) {
     return [
       `${emergencyPreamble}`,
-      'Incidente elétrico:',
-      '- Desligue a energia geral antes de tocar em qualquer equipamento.',
-      '- Não use água em fogo de origem elétrica.',
-      '- Afaste curiosos e sinalize o local até avaliação técnica.',
-      '- Em choque elétrico com vítima presa, desligue a fonte e só então afaste a vítima com material isolante.'
+      'Electrical incident:',
+      '- Turn off the main power before touching any equipment.',
+      '- Do not use water on electrical fires.',
+      '- Keep bystanders away and mark the area until a technician evaluates it.',
+      '- For electrical shock with the victim stuck to the source, cut the power first and only then separate the victim with an insulating object.'
     ].join('\n');
   }
 
   if (isPrevention) {
     return [
-      'Prevenção de incêndios em casa:',
-      '- Mantenha extintor válido e detectores de fumaça funcionando.',
-      '- Não sobrecarregue tomadas/benjamins; inspecione fiação regularmente.',
-      '- Cozinha: nunca deixe panelas no fogo sem supervisão.',
-      '- Armazene produtos inflamáveis longe de calor/chamas.',
-      '- Tenha rotas de fuga definidas e praticadas com a família.'
+      'Home fire prevention:',
+      '- Keep a valid extinguisher and working smoke detectors.',
+      '- Do not overload outlets/power strips; inspect wiring regularly.',
+      '- Kitchen: never leave pans on the stove unattended.',
+      '- Store flammable products away from heat/flames.',
+      '- Have family escape routes defined and practiced.'
     ].join('\n');
   }
 
   // Default guidance
   return [
     `${emergencyPreamble}`,
-    'Sou seu assistente de segurança, posso orientar sobre prevenção, queimaduras, uso de extintor e primeiros socorros. Diga com poucas palavras o que aconteceu.'
+    'I am your safety assistant. I can help with prevention, burns, use of extinguishers, choking, and electrical/gas incidents. In a few words, tell me what happened.'
   ].join('\n');
 }
 
@@ -538,15 +569,16 @@ if (require.main === module) {
   app.listen(PORT, '0.0.0.0');
 }
 
-// Background auto-refresh every 20 minutes to keep cache fresh
-setInterval(async () => {
-  try {
-    await fetchNasaFirmsData();
-    console.log('[Backend-Node] Background refresh completed');
-  } catch (e) {
-    console.log('[Backend-Node] Background refresh failed:', e?.message || e);
-  }
-}, REFRESH_INTERVAL_MS);
+// Optional background auto-refresh (disabled by default). Enable with ENABLE_BACKGROUND_REFRESH=1
+if (process.env.ENABLE_BACKGROUND_REFRESH === '1') {
+  setInterval(async () => {
+    try {
+      await fetchNasaFirmsData();
+    } catch (e) {
+      console.log('[Backend-Node] Background refresh failed:', e?.message || e);
+    }
+  }, REFRESH_INTERVAL_MS);
+}
 
 module.exports = app;
 
