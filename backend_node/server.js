@@ -330,6 +330,133 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'healthy', timestamp: new Date().toISOString() });
 });
 
+// Simple rule-based Chat Assistant (Português - Bombeiros)
+function normalize(text) {
+  return String(text || '').toLowerCase();
+}
+
+function generateChatResponse(userText) {
+  const text = normalize(userText);
+
+  const emergencyPreamble =
+    'Se isto for uma emergência real, ligue 193 (Bombeiros) ou 112 imediatamente.';
+
+  // Keyword groups
+  const isEmergency = /(inc[eê]ndio|fogo|muita fuma[cç]a|explos[aã]o|desmaio|inconsciente|sangramento|ferimento grave|cheiro de g[aá]s|vazamento de g[aá]s)/.test(text);
+  const isBurn = /(queimadur|queimei|me queimei|queimou|escald[a|o]|[eé]gua quente|[oó]leo quente)/.test(text);
+  const isExtinguisher = /(extintor|usar extintor|como apagar fogo|classe [a-d]|classe a|classe b|classe c)/.test(text);
+  const isChoking = /(engasg|heinlich|heimlich|desengasg)/.test(text);
+  const isPrevention = /(prevenir|preven[çc][aã]o|dica de seguran[çc]a|como evitar|risco de inc[eê]ndio)/.test(text);
+  const isGas = /(cheiro de g[aá]s|botij[aã]o|glp|vazamento)/.test(text);
+  const isElectric = /(choque el[eé]trico|tomada|curto|fios|painel el[eé]trico)/.test(text);
+
+  // Responses
+  if (isEmergency) {
+    return [
+      `${emergencyPreamble}`,
+      'Enquanto aguarda socorro, se for seguro:',
+      '- Afaste-se da fonte de risco e avise outras pessoas.',
+      '- Desligue energia e gás apenas se puder fazê-lo com segurança.',
+      '- Não tente apagar incêndios grandes. Evacue o local.',
+      '- Mantenha rotas de fuga desobstruídas e permaneça em área ventilada.'
+    ].join('\n');
+  }
+
+  if (isBurn) {
+    return [
+      `${emergencyPreamble}`,
+      'Queimaduras – primeiros socorros:',
+      '- Resfrie a área com água corrente fria por 20 minutos.',
+      '- NÃO use pasta de dente, manteiga ou pomadas caseiras.',
+      '- Retire anéis/relógios/roupas justas ao redor da área (sem arrancar tecido colado).',
+      '- Cubra com gaze estéril ou pano limpo e seco.',
+      '- Se a queimadura for extensa, em rosto, mãos, genitais ou houver bolhas grandes, procure atendimento médico imediatamente.'
+    ].join('\n');
+  }
+
+  if (isExtinguisher) {
+    return [
+      `${emergencyPreamble}`,
+      'Como usar o extintor (PASS):',
+      '- Puxe o pino de segurança.',
+      '- Aponte o bico para a base do fogo.',
+      '- Aperte o gatilho para liberar o agente.',
+      '- Varra lateralmente até extinguir as chamas.',
+      'Classes: A (sólidos), B (líquidos), C (elétricos). Use o tipo correto e mantenha saída às costas.'
+    ].join('\n');
+  }
+
+  if (isChoking) {
+    return [
+      `${emergencyPreamble}`,
+      'Engasgo – conduta básica:',
+      '- Adultos/crianças: 5 tapas nas costas entre as escápulas + manobra de Heimlich.',
+      '- Bebês (<1 ano): 5 tapas nas costas + 5 compressões torácicas (sem Heimlich).',
+      '- Se a pessoa tossir e respirar, incentive a tosse e monitore.',
+      '- Se ficar inconsciente, inicie RCP e acione emergência.'
+    ].join('\n');
+  }
+
+  if (isGas) {
+    return [
+      `${emergencyPreamble}`,
+      'Vazamento/Cheiro de gás:',
+      '- Abra portas e janelas imediatamente para ventilação.',
+      '- NÃO acenda luzes, isqueiros ou use aparelhos elétricos.',
+      '- Feche o registro do gás/botijão se for seguro.',
+      '- Afaste-se do local e acione a assistência técnica e os Bombeiros.'
+    ].join('\n');
+  }
+
+  if (isElectric) {
+    return [
+      `${emergencyPreamble}`,
+      'Incidente elétrico:',
+      '- Desligue a energia geral antes de tocar em qualquer equipamento.',
+      '- Não use água em fogo de origem elétrica.',
+      '- Afaste curiosos e sinalize o local até avaliação técnica.',
+      '- Em choque elétrico com vítima presa, desligue a fonte e só então afaste a vítima com material isolante.'
+    ].join('\n');
+  }
+
+  if (isPrevention) {
+    return [
+      'Prevenção de incêndios em casa:',
+      '- Mantenha extintor válido e detectores de fumaça funcionando.',
+      '- Não sobrecarregue tomadas/benjamins; inspecione fiação regularmente.',
+      '- Cozinha: nunca deixe panelas no fogo sem supervisão.',
+      '- Armazene produtos inflamáveis longe de calor/chamas.',
+      '- Tenha rotas de fuga definidas e praticadas com a família.'
+    ].join('\n');
+  }
+
+  // Default guidance
+  return [
+    `${emergencyPreamble}`,
+    'Sou seu assistente de segurança, posso orientar sobre prevenção, queimaduras, uso de extintor e primeiros socorros. Diga com poucas palavras o que aconteceu.'
+  ].join('\n');
+}
+
+app.post('/api/chat', (req, res) => {
+  try {
+    const messages = Array.isArray(req.body?.messages) ? req.body.messages : [];
+    const lastUser = messages
+      .reverse()
+      .find((m) => m && String(m.role) === 'user' && typeof m.content === 'string');
+
+    const userText = lastUser?.content || String(req.body?.text || '');
+    if (!userText.trim()) {
+      return res.status(400).json({ error: 'Mensagem vazia' });
+    }
+
+    const reply = generateChatResponse(userText);
+    res.json({ success: true, reply });
+  } catch (e) {
+    console.error('[Backend-Node] /api/chat error:', e?.message || e);
+    res.status(500).json({ error: 'Falha ao processar a mensagem' });
+  }
+});
+
 app.post('/api/refresh', async (req, res) => {
   try {
     if (fileExists(CACHE_FILE)) fs.unlinkSync(CACHE_FILE);
