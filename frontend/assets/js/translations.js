@@ -53,38 +53,38 @@ const translations = {
       title: "Our Team",
       subtitle: "Meet the experts behind FireWatch",
       member1: {
-        name: "Dr. Carlos Silva",
-        role: "Project Leader & Data Scientist",
-        bio: "PhD in Computer Science with 15 years of experience in geospatial data analysis and environmental monitoring systems.",
+        name: "Maria Luiza Choquetta",
+        role: "Team Leader and Designer",
+        // bio: "PhD in Computer Science with 15 years of experience in geospatial data analysis and environmental monitoring systems.",
       },
       member2: {
-        name: "Ana Rodriguez",
-        role: "Senior Software Engineer",
-        bio: "Full-stack development specialist and real-time systems architecture expert. Responsible for FireWatch infrastructure.",
+        name: "Enzo Budrys",
+        role: "Translator",
+        // bio: "Full-stack development specialist and real-time systems architecture expert. Responsible for FireWatch infrastructure.",
       },
       member3: {
-        name: "Rafael Santos",
-        role: "GIS & Cartography Specialist",
-        bio: "Master's in Geography focused on geographic information systems. Develops map visualizations and spatial analysis.",
+        name: "Enzo Leonardo",
+        role: "Back-end Developer",
+        // bio: "Master's in Geography focused on geographic information systems. Develops map visualizations and spatial analysis.",
       },
       member4: {
-        name: "Dr. Mariana Costa",
-        role: "Environmental Scientist",
-        bio: "PhD in Environmental Sciences. Fire ecology and environmental impacts specialist. Coordinates scientific data analysis.",
+        name: "Felipe Marques",
+        role: "Web Developer",
+        // bio: "PhD in Environmental Sciences. Fire ecology and environmental impacts specialist. Coordinates scientific data analysis.",
       },
       member5: {
-        name: "Lucas Ferreira",
-        role: "UI/UX Designer",
-        bio: "Designer with 8 years of experience in complex data interfaces. Responsible for user experience and visual design.",
+        name: "Iago Borges",
+        role: "Web Developer",
+        // bio: "Designer with 8 years of experience in complex data interfaces. Responsible for user experience and visual design.",
       },
       member6: {
-        name: "Juliana Oliveira",
-        role: "Data Analyst",
-        bio: "Statistical analysis and machine learning specialist. Develops predictive models for early fire detection.",
+        name: "Larissa Angélica",
+        role: "Editora",
+        // bio: "Statistical analysis and machine learning specialist. Develops predictive models for early fire detection.",
       },
       cta: {
         title: "Want to join the team?",
-        description: "We're always looking for talented individuals passionate about technology and the environment.",
+        // description: "We're always looking for talented individuals passionate about technology and the environment.", 
         button: "Get in Touch",
       },
     },
@@ -202,34 +202,34 @@ const translations = {
       title: "Nossa Equipe",
       subtitle: "Conheça os especialistas por trás do FireWatch",
       member1: {
-        name: "Dr. Carlos Silva",
-        role: "Líder do Projeto & Cientista de Dados",
-        bio: "PhD em Ciência da Computação com 15 anos de experiência em análise de dados geoespaciais e sistemas de monitoramento ambiental.",
+        name: "Maria Luiza Choquetta",
+        role: "Líder de Equipe e Designer",
+        bio: "PhD em Ciência da Computação com 15 anos de experiência em análise de dados geoespaciais e sistemas de monitoramento ambiental."
       },
       member2: {
-        name: "Ana Rodrigues",
-        role: "Engenheira de Software Sênior",
-        bio: "Especialista em desenvolvimento full-stack e arquitetura de sistemas em tempo real. Responsável pela infraestrutura do FireWatch.",
+        name: "Enzo Budrys",
+        role: "Tradutor",
+        bio: ""
       },
       member3: {
-        name: "Rafael Santos",
-        role: "Especialista em GIS & Cartografia",
-        bio: "Mestre em Geografia com foco em sistemas de informação geográfica. Desenvolve as visualizações de mapas e análises espaciais.",
+        name: "Enzo Leonardo",
+        role: "Desenvolvedor Back-end",
+        bio: ""
       },
       member4: {
-        name: "Dra. Mariana Costa",
-        role: "Cientista Ambiental",
-        bio: "PhD em Ciências Ambientais. Especialista em ecologia de fogo e impactos ambientais. Coordena a análise científica dos dados.",
+        name: "Felipe Marques",
+        role: "Desenvolvedor Web",
+        bio: ""
       },
       member5: {
-        name: "Lucas Ferreira",
-        role: "Designer UI/UX",
-        bio: "Designer com 8 anos de experiência em interfaces de dados complexos. Responsável pela experiência do usuário e design visual.",
+        name: "Iago Borges",
+        role: "Desenvolvedor Web",
+        bio: ""
       },
       member6: {
-        name: "Juliana Oliveira",
-        role: "Analista de Dados",
-        bio: "Especialista em análise estatística e machine learning. Desenvolve modelos preditivos para detecção precoce de incêndios.",
+        name: "Larissa Angélica",
+        role: "Editora",
+        bio: ""
       },
       cta: {
         title: "Quer fazer parte da equipe?",
@@ -349,38 +349,53 @@ const translations = {
       loading: "Cargando datos...",
     },
     team: {
-      title: "Nuestro Equipo",
-      subtitle: "Conozca a los expertos detrás de FireWatch",
-      member1: {
-        name: "Dr. Carlos Silva",
-        role: "Líder del Proyecto y Científico de Datos",
-        bio: "PhD en Ciencias de la Computación con 15 años de experiencia en análisis de datos geoespaciales y sistemas de monitoreo ambiental.",
-      },
-      member2: {
-        name: "Ana Rodríguez",
-        role: "Ingeniera de Software Senior",
-        bio: "Especialista en desarrollo full-stack y arquitectura de sistemas en tiempo real. Responsable de la infraestructura de FireWatch.",
-      },
-      member3: {
-        name: "Rafael Santos",
-        role: "Especialista en GIS y Cartografía",
-        bio: "Maestría en Geografía enfocada en sistemas de información geográfica. Desarrolla visualizaciones de mapas y análisis espaciales.",
-      },
-      member4: {
-        name: "Dra. Mariana Costa",
-        role: "Científica Ambiental",
-        bio: "PhD en Ciencias Ambientales. Especialista en ecología del fuego e impactos ambientales. Coordina el análisis científico de datos.",
-      },
-      member5: {
-        name: "Lucas Ferreira",
-        role: "Diseñador UI/UX",
-        bio: "Diseñador con 8 años de experiencia en interfaces de datos complejos. Responsable de la experiencia del usuario y diseño visual.",
-      },
-      member6: {
-        name: "Juliana Oliveira",
-        role: "Analista de Datos",
-        bio: "Especialista en análisis estadístico y machine learning. Desarrolla modelos predictivos para detección temprana de incendios.",
-      },
+      title: "Mapa Interactivo de Focos de Incendio",
+  toggleTheme: "Cambiar tema del mapa",
+  refresh: "Actualizar datos",
+  location: "Mi ubicación",
+  clear: "Limpiar resaltados",
+  legend: "Leyenda",
+  highConf: "Alta Confianza (>80%)",
+  medConf: "Confianza Media (50-80%)",
+  lowConf: "Baja Confianza (<50%)",
+  cityArea: "Área de la Ciudad",
+  yourLocation: "Su Ubicación",
+  loading: "Cargando datos..."
+},
+
+ team = {
+  title: "Nuestro Equipo",
+  subtitle: "Conozca a los expertos detrás de FireWatch",
+  member1: {
+    name: "Dr. Carlos Silva",
+    role: "Líder del Proyecto y Científico de Datos",
+    bio: "PhD en Ciencias de la Computación con 15 años de experiencia en análisis de datos geoespaciales y sistemas de monitoreo ambiental."
+  },
+  member2: {
+    name: "Ana Rodríguez",
+    role: "Ingeniera de Software Senior",
+    bio: "Especialista en desarrollo full-stack y arquitectura de sistemas en tiempo real. Responsable de la infraestructura de FireWatch."
+  },
+  member3: {
+    name: "Rafael Santos",
+    role: "Especialista en GIS y Cartografía",
+    bio: "Maestría en Geografía enfocada en sistemas de información geográfica. Desarrolla visualizaciones de mapas y análisis espaciales."
+  },
+  member4: {
+    name: "Dra. Mariana Costa",
+    role: "Científica Ambiental",
+    bio: "PhD en Ciencias Ambientales. Especialista en ecología del fuego e impactos ambientales. Coordina el análisis científico de datos."
+  },
+  member5: {
+    name: "Lucas Ferreira",
+    role: "Diseñador UI/UX",
+    bio: "Diseñador con 8 años de experiencia en interfaces de datos complejos. Responsable de la experiencia del usuario y diseño visual."
+  },
+  member6: {
+    name: "Juliana Oliveira",
+    role: "Analista de Datos",
+    bio: "Especialista en análisis estadístico y machine learning. Desarrolla modelos predictivos para detección temprana de incendios."
+  },
       cta: {
         title: "¿Quieres unirte al equipo?",
         description: "Siempre estamos buscando talentos apasionados por la tecnología y el medio ambiente.",
