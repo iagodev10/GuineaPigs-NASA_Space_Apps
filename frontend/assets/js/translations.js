@@ -349,53 +349,32 @@ const translations = {
       loading: "Cargando datos...",
     },
     team: {
-      title: "Mapa Interactivo de Focos de Incendio",
-  toggleTheme: "Cambiar tema del mapa",
-  refresh: "Actualizar datos",
-  location: "Mi ubicación",
-  clear: "Limpiar resaltados",
-  legend: "Leyenda",
-  highConf: "Alta Confianza (>80%)",
-  medConf: "Confianza Media (50-80%)",
-  lowConf: "Baja Confianza (<50%)",
-  cityArea: "Área de la Ciudad",
-  yourLocation: "Su Ubicación",
-  loading: "Cargando datos..."
-},
-
- team = {
-  title: "Nuestro Equipo",
-  subtitle: "Conozca a los expertos detrás de FireWatch",
-  member1: {
-    name: "Dr. Carlos Silva",
-    role: "Líder del Proyecto y Científico de Datos",
-    bio: "PhD en Ciencias de la Computación con 15 años de experiencia en análisis de datos geoespaciales y sistemas de monitoreo ambiental."
-  },
-  member2: {
-    name: "Ana Rodríguez",
-    role: "Ingeniera de Software Senior",
-    bio: "Especialista en desarrollo full-stack y arquitectura de sistemas en tiempo real. Responsable de la infraestructura de FireWatch."
-  },
-  member3: {
-    name: "Rafael Santos",
-    role: "Especialista en GIS y Cartografía",
-    bio: "Maestría en Geografía enfocada en sistemas de información geográfica. Desarrolla visualizaciones de mapas y análisis espaciales."
-  },
-  member4: {
-    name: "Dra. Mariana Costa",
-    role: "Científica Ambiental",
-    bio: "PhD en Ciencias Ambientales. Especialista en ecología del fuego e impactos ambientales. Coordina el análisis científico de datos."
-  },
-  member5: {
-    name: "Lucas Ferreira",
-    role: "Diseñador UI/UX",
-    bio: "Diseñador con 8 años de experiencia en interfaces de datos complejos. Responsable de la experiencia del usuario y diseño visual."
-  },
-  member6: {
-    name: "Juliana Oliveira",
-    role: "Analista de Datos",
-    bio: "Especialista en análisis estadístico y machine learning. Desarrolla modelos predictivos para detección temprana de incendios."
-  },
+      title: "Nuestro Equipo",
+      subtitle: "Conozca a los expertos detrás de FireWatch",
+      member1: {
+        name: "Maria Luiza Choquetta",
+        role: "Líder de Equipo y Diseñadora",
+      },
+      member2: {
+        name: "Enzo Budrys",
+        role: "Traductor",
+      },
+      member3: {
+        name: "Enzo Leonardo",
+        role: "Desarrollador Back-end",
+      },
+      member4: {
+        name: "Felipe Marques",
+        role: "Desarrollador Web",
+      },
+      member5: {
+        name: "Iago Borges",
+        role: "Desarrollador Web",
+      },
+      member6: {
+        name: "Larissa Angélica",
+        role: "Editora",
+      },
       cta: {
         title: "¿Quieres unirte al equipo?",
         description: "Siempre estamos buscando talentos apasionados por la tecnología y el medio ambiente.",
