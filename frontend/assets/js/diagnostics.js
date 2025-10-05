@@ -88,6 +88,15 @@
         }
       }
 
+      // Restore original theme to avoid visible flicker during diagnostics
+      try {
+        if (typeof window.setTheme === "function") {
+          window.setTheme(current)
+        } else {
+          el.setAttribute("data-theme", current)
+        }
+      } catch (_) {}
+
       const ok = themeChanged && applied === target && mapSynced
       return { ok, themeChanged, applied, target, mapSynced }
     } catch (e) {
@@ -122,11 +131,28 @@
     console.log("OK")
   }
 
-  // Auto-run after load
-  if (document.readyState === "complete" || document.readyState === "interactive") {
-    setTimeout(run, 100)
-  } else {
-    document.addEventListener("DOMContentLoaded", () => setTimeout(run, 100))
+  // Gate diagnostics to avoid auto theme changes in production
+  function diagnosticsEnabled() {
+    try {
+      const url = new URL(window.location.href)
+      if (url.searchParams.get("diagnostics") === "1") return true
+    } catch (_) {}
+    try {
+      if (window.FIREWATCH_DIAGNOSTICS === true) return true
+    } catch (_) {}
+    try {
+      if (localStorage.getItem("firewatch_diagnostics") === "1") return true
+    } catch (_) {}
+    return false
+  }
+
+  // Auto-run only when explicitly enabled
+  if (diagnosticsEnabled()) {
+    if (document.readyState === "complete" || document.readyState === "interactive") {
+      setTimeout(run, 100)
+    } else {
+      document.addEventListener("DOMContentLoaded", () => setTimeout(run, 100))
+    }
   }
 
   // Expose for manual trigger
