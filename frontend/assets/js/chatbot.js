@@ -5,7 +5,7 @@
   };
 
   const SYSTEM_MESSAGE =
-    "Você está falando com um assistente virtual do Corpo de Bombeiros. Ele fornece orientações educativas de segurança. Em emergência real, ligue 193 ou 112.";
+    "You're speaking with a Fire Department virtual assistant. It provides educational safety guidance. In a real emergency, call your local emergency number (e.g., 911/112/193).";
 
   let isOpen = false;
   let isSending = false;
@@ -13,7 +13,7 @@
     {
       role: "assistant",
       content:
-        "Olá! Sou o assistente virtual do Corpo de Bombeiros. Posso orientar sobre prevenção, queimaduras, extintores e primeiros socorros. Como posso ajudar?",
+        "Hello! I'm the Fire Department virtual assistant. I can help with prevention, burns, fire extinguishers and first aid. How can I help?",
     },
   ];
 
@@ -104,14 +104,14 @@
       </div>
       <div class="fw-chatbot-body" id="fwChatBody"></div>
       <div class="fw-quick" id="fwQuick">
-        <button type="button">Como prevenir incêndios?</button>
-        <button type="button">O que fazer em queimadura?</button>
-        <button type="button">Como usar extintor?</button>
-        <button type="button">Engasgo: como agir?</button>
+        <button type="button">How to prevent fires?</button>
+        <button type="button">What to do for burns?</button>
+        <button type="button">How to use an extinguisher?</button>
+        <button type="button">Choking: how to act?</button>
       </div>
       <div class="fw-chatbot-footer">
-        <input id="fwChatInput" class="fw-chatbot-input" placeholder="Digite sua dúvida de segurança..." />
-        <button id="fwChatSend" class="fw-chatbot-send">Enviar</button>
+        <input id="fwChatInput" class="fw-chatbot-input" placeholder="Type your safety question..." />
+        <button id="fwChatSend" class="fw-chatbot-send">Send</button>
       </div>
     `;
 
@@ -161,7 +161,7 @@
     if (isSending) {
       const loading = document.createElement("div");
       loading.className = "fw-msg assistant fw-loading";
-      loading.textContent = "Analisando...";
+      loading.textContent = "Analyzing...";
       body.appendChild(loading);
     }
 
